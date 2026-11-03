@@ -23,6 +23,12 @@ bench set-config -g redis_socketio redis://redis-queue:6379
 # Redis runs in its own containers, so don't start it from the Procfile.
 sed -i '/^redis/d' Procfile
 
+# Newer MariaDB clients (in the bench image) require TLS by default, but the dev database
+# container has no TLS -> "ERROR 2026: SSL is required, but the server does not support it".
+if ! grep -qs '^skip-ssl' "$HOME/.my.cnf"; then
+  printf '[client]\nskip-ssl\n' >> "$HOME/.my.cnf"
+fi
+
 echo ">>> waiting for MariaDB"
 for _ in $(seq 1 60); do
   python3 -c "import socket; socket.create_connection(('mariadb', 3306), 2)" 2>/dev/null && break
@@ -46,15 +52,24 @@ fi
   | sed 's/^crmcabinet_erp$/crm/' | tr -s '[:space:]' '\n' | sed '/^$/d' | awk '!seen[$0]++' > sites/apps.txt.new
 mv sites/apps.txt.new sites/apps.txt
 
+# A site folder left over from a failed attempt would make us skip site creation forever.
+if [ -d "sites/$SITE" ] && [ ! -f "sites/$SITE/.setup_complete" ] \
+   && ! bench --site "$SITE" list-apps 2>/dev/null | grep -q cabinet_erp; then
+  echo ">>> removing half-created site $SITE from an earlier failed run"
+  rm -rf "sites/$SITE"
+fi
+
 if [ ! -d "sites/$SITE" ]; then
   echo ">>> new-site $SITE"
   bench new-site "$SITE" \
+    --force \
     --db-root-password 123 \
     --admin-password admin \
     --mariadb-user-host-login-scope='%' \
     --install-app crm \
     --install-app cabinet_erp
   bench --site "$SITE" execute cabinet_erp.demo.setup_demo
+  touch "sites/$SITE/.setup_complete"
 fi
 
 bench use "$SITE"
