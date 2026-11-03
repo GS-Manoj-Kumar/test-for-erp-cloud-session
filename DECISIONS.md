@@ -55,3 +55,39 @@ Choices made where `CLAUDE.md` left room. Newest phase last.
 22. **Import is blocked on Cancelled orders**, allowed on every other status.
 23. **Order Panel** is `in_create` + `read_only`: rows only come from the import.
 24. `sealed_at` `2026-09-11T23:50:02` is stored as a Datetime `2026-09-11 23:50:02`.
+
+## Phase 3 — Inventory
+
+25. **Location links use `production_order`**, not `order` (same reason as item 14).
+26. **Stock Location** is named `LOC-0001` with an auto-built title ("General Store",
+    "Project: P0001 - Kitchen", ...). At most one location per scope + link. Picking an order
+    fills its project and client, and picking a project fills its client, so a client filter
+    also finds project and order stock. The General Store is created by `after_install` and
+    `after_migrate`, which also covers sites set up in Phases 1–2.
+27. **Stock Movement fields:** `location` is where the stock is (or "into" for Receipt,
+    "from" for Transfer). `target_location` is used only for Transfer, and `from_state`
+    (Received / In Process, default In Process) only for Dispatch.
+28. **"Both are projects" rule** = the two locations belong to *different projects*. That
+    covers Project and Order locations alike, and doesn't count moving project stock into
+    that project's own order, or stock from the General / client store. Approver = the user
+    who submits.
+29. **Transfers only move Received stock.** In Process stock has to be returned first.
+30. **Balance check** nets all rows of one movement per (location, state, item) and compares
+    with the current ledger sum. Cancel runs the same check on the reversing rows, so a
+    receipt can't be cancelled once its stock has been issued. Back-dated movements are
+    checked against today's balance, not the balance on their date.
+31. **Concurrency:** the movement's locations are row-locked (`SELECT ... FOR UPDATE`) before
+    the balance check, so two submits on the same stock can't both pass.
+32. **Ledger rows** also store client / project / production_order copied from the location,
+    which keeps report filters simple. Rows can't be edited or deleted (controller guards +
+    read-only permissions). Cancel adds rows flagged `is_cancellation`.
+33. **Stock Item** is named by `item_code`. The "core sheet" kind is shown as "Core Sheet".
+    The default rate fills empty item rates on movements.
+34. **Order Material Line `stock_item`** was added now (see item 15). Mapping is manual. The
+    Order Material Status report sums `order_qty` per stock item and counts only stock at that
+    order's own location(s). Shortfall = required − (received + in process + sent), floored at 0.
+    Unmapped lines show their full requirement as shortfall.
+35. **Reports** live in `inventory/report/`, because Frappe requires reports inside a module.
+    Stock Balance has an "As On" date. Stock Ledger shows a running balance that starts from
+    the balance before From Date.
+36. Quantities are rounded to 6 decimals in all checks, so 0.1 + 0.2 covers 0.3.

@@ -44,7 +44,8 @@ def our_doctypes():
 def test_some_doctypes_exist():
     names = our_doctypes()
     assert {"Cabinet Client", "Cabinet Project", "Production Order",
-            "Order Panel", "Order Material Line"} <= names
+            "Order Panel", "Order Material Line", "Stock Item", "Stock Location",
+            "Stock Movement", "Stock Movement Item", "Stock Ledger Entry"} <= names
 
 
 def test_modules_have_packages():
@@ -95,6 +96,10 @@ def test_doctype_json(path):
             assert s.strip() in names, s
     if not d.get("istable"):
         assert d["permissions"], "doctype needs at least one permission row"
+    if d.get("is_submittable"):
+        amended = [f for f in fields if f["fieldname"] == "amended_from"]
+        assert amended and amended[0]["options"] == d["name"], "submittable needs amended_from"
+        assert any(p.get("submit") and p.get("cancel") for p in d["permissions"])
 
 
 def test_naming():
@@ -136,3 +141,31 @@ def test_project_milestones():
     ]
     assert proj["milestone"]["default"] == "Enquiry"
     assert proj["client"]["reqd"] == 1
+
+
+REPORT_FILES = sorted(glob.glob(os.path.join(APP, "*", "report", "*", "*.json")))
+
+
+def test_reports_exist():
+    names = {load(p)["name"] for p in REPORT_FILES}
+    assert {"Stock Balance", "Stock Ledger", "Order Material Status"} <= names
+
+
+@pytest.mark.parametrize("path", REPORT_FILES, ids=lambda p: os.path.basename(p))
+def test_report_json(path):
+    d = load(path)
+    folder = os.path.dirname(path)
+    assert d["doctype"] == "Report" and d["report_type"] == "Script Report"
+    assert scrub(d["name"]) == os.path.basename(folder)
+    assert d["module"] in MODULES and d["is_standard"] == "Yes"
+    assert d["ref_doctype"] in our_doctypes()
+    py = os.path.join(folder, os.path.basename(folder) + ".py")
+    assert "def execute(" in open(py).read()
+    assert os.path.isfile(os.path.join(folder, os.path.basename(folder) + ".js"))
+
+
+def test_stock_ledger_entry_is_append_only():
+    sle = load(os.path.join(APP, "inventory", "doctype", "stock_ledger_entry", "stock_ledger_entry.json"))
+    assert sle["in_create"] == 1
+    for p in sle["permissions"]:
+        assert not p.get("write") and not p.get("create") and not p.get("delete")

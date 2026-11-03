@@ -13,7 +13,8 @@
   "order_qty",
   "wastage_pct",
   "unit_price",
-  "line_total"
+  "line_total",
+  "stock_item"
  ],
  "fields": [
   {
@@ -64,6 +65,13 @@
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Line Total"
+  },
+  {
+   "description": "Map this line to a stock item for the Order Material Status report",
+   "fieldname": "stock_item",
+   "fieldtype": "Link",
+   "label": "Stock Item",
+   "options": "Stock Item"
   }
  ],
  "istable": 1,

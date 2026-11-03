@@ -11,7 +11,7 @@ Hierarchy: **Client (C0001)** → **Project (P0001)** → **Production Order (P0
 |---|---|---|
 | 1 | Scaffold, Cabinet Client, Cabinet Project | done |
 | 2 | Production Order + F4P import | done |
-| 3 | Inventory | – |
+| 3 | Inventory | done |
 | 4 | Billing | – |
 | 5 | CRM glue, roles, workspace | – |
 
@@ -68,7 +68,10 @@ cabinet_erp/            Frappe app package
   clients/doctype/      Cabinet Client, Cabinet Project
   production/doctype/   Production Order, Order Panel, Order Material Line
   production/f4p_import.py   pure-Python f4p.sqlite parser (parse_f4p)
-  inventory/ billing/   (filled in later phases)
+  inventory/doctype/    Stock Item, Stock Location, Stock Movement, Stock Ledger Entry
+  inventory/report/     Stock Balance, Stock Ledger, Order Material Status
+  inventory/stock_logic.py   pure-Python balance / transfer rules
+  billing/              (Phase 4)
   utils/gst.py          pure-Python GSTIN helpers
 tests/                  plain-pytest suite + fixtures/f4p.sqlite
 DECISIONS.md            choices made where the spec was open
@@ -79,3 +82,20 @@ DECISIONS.md            choices made where the spec was open
 Open a Production Order → **Import F4P** → upload the sealed `f4p.sqlite` → **Import**.
 Re-importing the same seal does nothing; a newer seal replaces the order's panels and
 material lines. Panels are listed under **View → Panels**.
+
+## Stock
+
+Stock only changes through a submitted **Stock Movement**. Pick a **Stock Location** (General
+Store, or one per client / project / order), then one of:
+
+| Movement | Effect (same location unless noted) |
+|---|---|
+| Receipt | + Received |
+| Issue to Production | Received → In Process |
+| Return from Production | In Process → Received |
+| Dispatch | Received or In Process → Sent |
+| Transfer | Received at A → Received at B (project → other project needs Urgent + Reason) |
+
+Cancelling a movement writes reversing ledger rows; ledger rows are never edited or deleted.
+Reports: **Stock Balance**, **Stock Ledger**, **Order Material Status** (map Order Material
+Lines to Stock Items first).
