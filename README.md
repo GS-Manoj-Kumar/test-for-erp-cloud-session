@@ -10,7 +10,7 @@ Hierarchy: **Client (C0001)** → **Project (P0001)** → **Production Order (P0
 | Phase | What | State |
 |---|---|---|
 | 1 | Scaffold, Cabinet Client, Cabinet Project | done |
-| 2 | Production Order + F4P import | – |
+| 2 | Production Order + F4P import | done |
 | 3 | Inventory | – |
 | 4 | Billing | – |
 | 5 | CRM glue, roles, workspace | – |
@@ -66,8 +66,16 @@ find cabinet_erp -name '*.json' -exec python -m json.tool {} \; > /dev/null
 cabinet_erp/            Frappe app package
   hooks.py, modules.txt
   clients/doctype/      Cabinet Client, Cabinet Project
-  production/ inventory/ billing/   (filled in later phases)
+  production/doctype/   Production Order, Order Panel, Order Material Line
+  production/f4p_import.py   pure-Python f4p.sqlite parser (parse_f4p)
+  inventory/ billing/   (filled in later phases)
   utils/gst.py          pure-Python GSTIN helpers
 tests/                  plain-pytest suite + fixtures/f4p.sqlite
 DECISIONS.md            choices made where the spec was open
 ```
+
+## Importing an F4P seal
+
+Open a Production Order → **Import F4P** → upload the sealed `f4p.sqlite` → **Import**.
+Re-importing the same seal does nothing; a newer seal replaces the order's panels and
+material lines. Panels are listed under **View → Panels**.

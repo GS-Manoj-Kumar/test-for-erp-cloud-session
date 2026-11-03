@@ -33,13 +33,18 @@ def load(path):
         return json.load(f)
 
 
+def child_tables():
+    return {load(p)["name"]: load(p).get("istable", 0) for p in DOCTYPE_FILES}
+
+
 def our_doctypes():
     return {load(p)["name"] for p in DOCTYPE_FILES}
 
 
 def test_some_doctypes_exist():
     names = our_doctypes()
-    assert {"Cabinet Client", "Cabinet Project"} <= names
+    assert {"Cabinet Client", "Cabinet Project", "Production Order",
+            "Order Panel", "Order Material Line"} <= names
 
 
 def test_modules_have_packages():
@@ -75,6 +80,8 @@ def test_doctype_json(path):
         assert f["fieldtype"] in VALID_FIELDTYPES, f
         if f["fieldtype"] in ("Link", "Table"):
             assert f.get("options") in known, f
+        if f["fieldtype"] == "Table":
+            assert child_tables().get(f["options"]) == 1, f"{f['options']} must be istable"
         if f["fieldtype"] == "Select" and f.get("default"):
             assert f["default"] in f["options"].split("\n"), f
         if f.get("fetch_from"):
@@ -86,13 +93,38 @@ def test_doctype_json(path):
     for s in (d.get("search_fields") or "").split(","):
         if s.strip():
             assert s.strip() in names, s
-    assert d["permissions"], "doctype needs at least one permission row"
+    if not d.get("istable"):
+        assert d["permissions"], "doctype needs at least one permission row"
 
 
 def test_naming():
     by_name = {load(p)["name"]: load(p) for p in DOCTYPE_FILES}
     assert by_name["Cabinet Client"]["autoname"] == "C.####"
     assert by_name["Cabinet Project"]["autoname"] == "P.####"
+    assert by_name["Production Order"]["autoname"] == "format:{project}-ORD-{##}"
+
+
+def test_order_panel_fields_match_parser():
+    from cabinet_erp.production.f4p_import import PANEL_FIELDS
+    panel = load(os.path.join(APP, "production", "doctype", "order_panel", "order_panel.json"))
+    names = {f["fieldname"] for f in panel["fields"]}
+    assert set(PANEL_FIELDS) <= names
+
+
+def test_material_line_fields_match_parser():
+    from cabinet_erp.production.f4p_import import parse_f4p
+    line = load(os.path.join(APP, "production", "doctype", "order_material_line", "order_material_line.json"))
+    names = {f["fieldname"] for f in line["fields"]}
+    parsed = parse_f4p(os.path.join(ROOT, "tests", "fixtures", "f4p.sqlite"))
+    assert set(parsed["material_lines"][0]) <= names
+
+
+def test_production_order_fields_match_parser():
+    from cabinet_erp.production.f4p_import import order_values, parse_f4p
+    po = load(os.path.join(APP, "production", "doctype", "production_order", "production_order.json"))
+    names = {f["fieldname"] for f in po["fields"]}
+    parsed = parse_f4p(os.path.join(ROOT, "tests", "fixtures", "f4p.sqlite"))
+    assert set(order_values(parsed)) <= names
 
 
 def test_project_milestones():

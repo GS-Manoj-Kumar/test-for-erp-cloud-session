@@ -29,3 +29,29 @@ Choices made where `CLAUDE.md` left room. Newest phase last.
     committed now so Phase 2 can use it.
 13. Bench-only tests (`test_cabinet_*.py` inside doctype folders) are kept out of the plain
     pytest run via `testpaths = ["tests"]`.
+
+## Phase 2 — Production + import
+
+14. **Order Panel's link field is `production_order`, not `order`.** `order` is a reserved
+    SQL word and would need quoting in every raw query and report.
+15. **`stock_item` on Order Material Line is deferred to Phase 3.** Frappe refuses a Link to
+    a doctype that does not exist yet (Stock Item), so the field comes with Inventory.
+16. **Production Order naming** = `format:{project}-ORD-{##}` → `P0001-ORD-01`. The counter
+    is per project.
+17. **Where the code lives:** `production/f4p_import.py` is pure Python (parse, plan, warn,
+    map). The Frappe side is the whitelisted `ProductionOrder.import_f4p(file_url)` doc method,
+    which the **Import F4P** button calls.
+18. **Upload flow:** the button opens a dialog that uploads the file as a Frappe File. The
+    import then attaches it to the order and stores the URL in `f4p_file`.
+19. **Replace = delete + re-insert** the order's Order Panels and material lines in the
+    same request (one DB transaction). Panels use random (hash) names.
+20. **Panel placement:** `sheet_index` / `board_index` come from `v_mastercutlist`. If a panel
+    showed up there more than once, the first sheet is kept. Panels missing from the view
+    or from `pack_item` are still imported, with those fields left blank.
+21. **Meta codes:** `project_code` / `client_code` / `order_no` that are empty or `NO_PROJECT`
+    are ignored. Otherwise a mismatch is stored in `f4p_warnings` and shown as an orange
+    banner; it never blocks the import. `order_no` counts as matching if it equals the order
+    name, the `NN` suffix, `ORD-NN`, or the same number without leading zeros.
+22. **Import is blocked on Cancelled orders**, allowed on every other status.
+23. **Order Panel** is `in_create` + `read_only`: rows only come from the import.
+24. `sealed_at` `2026-09-11T23:50:02` is stored as a Datetime `2026-09-11 23:50:02`.
