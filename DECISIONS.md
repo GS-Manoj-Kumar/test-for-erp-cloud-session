@@ -136,3 +136,22 @@ Choices made where `CLAUDE.md` left room. Newest phase last.
 
 51. From Phase 4 on, the owner asked to merge straight to `main` instead of leaving PRs open.
     PR #1 (Phases 1–4) was merged by Claude.
+
+## Demo and live preview
+
+52. **Two previews**, because GitHub can't host a running Frappe server:
+    - **Demo site (GitHub Pages):** static HTML + JS reading `data.json`. CI builds that file by
+      running the dummy dataset through the app's pure-Python logic (`parse_f4p`, stock rules,
+      GST / status rules), so the demo can't drift from the code. It's read-only.
+    - **Live preview (Codespaces):** `.devcontainer/` runs `frappe/bench` + MariaDB 10.6 +
+      Redis, initialises a Frappe `version-15` bench, gets CRM (`main` branch, which can be
+      changed with `CRM_BRANCH`), symlinks this repo as `apps/cabinet_erp`, creates
+      `cabinet.localhost`, and loads the demo data. The admin password is `admin`, which is
+      fine for a throwaway personal codespace and must never be reused anywhere real.
+53. **One dummy dataset** (`cabinet_erp/demo_data.py`), used by both previews. The names and
+    GSTINs are made up (the GSTINs are format- and checksum-valid). The sample seal has no
+    prices, so demo prices per stock item are applied to its material lines and order costs.
+    `tests/test_demo_data.py` keeps the dataset valid.
+54. **CI:** `tests.yml` runs pytest, json.tool and the demo build on every push and PR.
+    `pages.yml` deploys the site from `main`. GitHub Pages has to be switched to
+    "GitHub Actions" once in the repo settings.

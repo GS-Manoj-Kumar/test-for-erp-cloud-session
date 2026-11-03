@@ -3,6 +3,11 @@
 CRM + Inventory + Invoices for a CNC cabinet-production business, built as a
 Frappe v15 app (`cabinet_erp`). See `CLAUDE.md` for the full spec and the phase plan.
 
+[![Tests](https://github.com/GS-Manoj-Kumar/test-for-erp-cloud-session/actions/workflows/tests.yml/badge.svg)](https://github.com/GS-Manoj-Kumar/test-for-erp-cloud-session/actions/workflows/tests.yml)
+[![Open live app in Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/GS-Manoj-Kumar/test-for-erp-cloud-session?quickstart=1)
+
+**Demo (dummy data, read-only):** https://gs-manoj-kumar.github.io/test-for-erp-cloud-session/
+
 Hierarchy: **Client (C0001)** → **Project (P0001)** → **Production Order (P0001-ORD-01)**.
 
 ## Status
@@ -14,6 +19,16 @@ Hierarchy: **Client (C0001)** → **Project (P0001)** → **Production Order (P0
 | 3 | Inventory | done |
 | 4 | Billing | done |
 | 5 | CRM glue, roles, workspace | – |
+
+## Demo and live preview
+
+| | What it is | How |
+|---|---|---|
+| **Demo site** | Static, read-only pages on GitHub Pages: clients, projects, orders (88 imported panels), stock, invoices, all six reports. The data is made up, but every total is computed by the app's own Python code. | Open the link above. Rebuilt on every push to `main` by `.github/workflows/pages.yml`. Local: `python scripts/build_demo_site.py && python -m http.server -d site 8080` |
+| **Live preview** | The real app (Frappe v15 + CRM + cabinet_erp) running in a GitHub Codespace with the same demo data loaded. You can create and submit records. | Click the Codespaces badge above. First start takes 10–15 min, then port 8000 opens; log in as `Administrator` / `admin`. See `.devcontainer/README.md`. |
+
+The demo data lives in `cabinet_erp/demo_data.py` and is used by both. To load it into
+any fresh site: `bench --site <site> execute cabinet_erp.demo.setup_demo`.
 
 ## Local install
 
@@ -75,7 +90,11 @@ cabinet_erp/            Frappe app package
   billing/report/       Invoice Register, Receivables Ageing, Project Billing Summary
   billing/billing_logic.py   pure-Python GST / outstanding / status rules
   utils/gst.py          pure-Python GSTIN helpers
+  demo_data.py, demo.py dummy dataset + loader for a real site
 tests/                  plain-pytest suite + fixtures/f4p.sqlite
+site/, scripts/         static demo site (GitHub Pages) and its data builder
+.devcontainer/          Codespaces live preview (bench + MariaDB + Redis)
+.github/workflows/      tests on every push/PR; Pages deploy on main
 DECISIONS.md            choices made where the spec was open
 ```
 
