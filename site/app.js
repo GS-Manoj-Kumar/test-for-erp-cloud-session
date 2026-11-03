@@ -201,7 +201,8 @@
 
   // ---------- sidebar ----------
   function sidebar(active) {
-    let html = `<a href="#/" class="${active === "home" ? "active" : ""}">Home</a>`;
+    let html = `<a href="#/" class="${active === "home" ? "active" : ""}">Home</a>
+      <a href="#/documents" class="${active === "documents" ? "active" : ""}">📄 Print &amp; PDF</a>`;
     for (const m of MODULES) {
       html += `<h4>${m}</h4>`;
       for (const [dt, cfg] of Object.entries(DOCTYPES)) {
@@ -237,6 +238,7 @@
         ${tile("Stock Movements", docs("Stock Movement").length, "#/list/Stock%20Movement", `${docs("Stock Ledger Entry").length} ledger rows`)}
         ${tile("Receivables", inr.format(receivable), "#/report/Receivables%20Ageing", `${overdue.length} overdue`)}
         ${tile("Material shortfalls", shortfalls.length, "#/report/Order%20Material%20Status")}
+        ${tile("PDF documents", Object.keys(DATA.meta.prints || {}).length, "#/documents", "invoices, receipts, cutlists, challans")}
       </div>
       <div class="grid2">
         <div class="card"><h3>Overdue invoices</h3>${table(overdue, ["name", "client_name", "due_date", "outstanding_amount"], { dt: "Cabinet Invoice" })}</div>
@@ -280,6 +282,8 @@
       const more = rows.length > shown.length ? `<p class="muted pad">Showing ${shown.length} of ${rows.length}. <a href="#/list/${slug(rdt)}?q=${slug(doc.name)}">See all</a></p>` : "";
       return `<div class="card"><h3>${esc(title)} (${rows.length})</h3>${table(shown, DOCTYPES[rdt].list, { dt: rdt })}${more}</div>`;
     }).join("");
+    const printLinks = (DATA.meta.prints || {})[doc.name]
+      ? `<a href="print/${slug(doc.name)}.html">🖨 Print view</a><a href="pdf/${slug(doc.name)}.pdf" download>⬇ PDF</a>` : "";
     const reportLink = cfg.reportLink && DATA.reports[cfg.reportLink][doc.name]
       ? `<a href="#/report/${slug(cfg.reportLink)}?order=${slug(doc.name)}">📊 ${esc(cfg.reportLink)}</a>` : "";
     const alert = dt === "Production Order" && doc.seal_id
@@ -287,7 +291,7 @@
     $main.innerHTML = `
       <div class="crumbs"><a href="#/list/${slug(dt)}">${esc(dt)}</a></div>
       <div class="page-head"><h1>${esc(doc[cfg.title] || doc.name)}</h1><span class="sub">${esc(doc.name)}</span>
-        ${doc[statusField] ? cell(statusField, doc[statusField]) : ""}<span class="links">${reportLink}</span></div>
+        ${doc[statusField] ? cell(statusField, doc[statusField]) : ""}<span class="links">${printLinks}${reportLink}</span></div>
       ${alert}${sections}${tables}${related}`;
   }
 
@@ -321,6 +325,26 @@
     });
   }
 
+  function documents() {
+    sidebar("documents");
+    const prints = DATA.meta.prints || {};
+    const rows = Object.entries(prints).map(([name, dt]) => {
+      const d = find(dt, name) || {};
+      return { name, dt, title: d[DOCTYPES[dt].title] || "", date: d.posting_date || "" };
+    });
+    const FORMAT = { "Cabinet Invoice": "Cabinet Tax Invoice", "Payment Entry Lite": "Payment Receipt",
+      "Production Order": "Production Cutlist", "Stock Movement": "Delivery Challan" };
+    $main.innerHTML = `
+      <div class="page-head"><h1>Print &amp; PDF</h1></div>
+      <div class="note">These are the app's four print formats (${Object.values(FORMAT).map(esc).join(", ")}),
+        rendered from the same Jinja templates Frappe uses for <b>Print</b> and <b>Download PDF</b>, filled with the demo data.</div>
+      <div class="table-wrap"><table><thead><tr><th>Document</th><th>Type</th><th>Print format</th><th>Title</th><th>Date</th><th></th></tr></thead><tbody>
+      ${rows.map((r) => `<tr><td><a href="#/form/${slug(r.dt)}/${slug(r.name)}">${esc(r.name)}</a></td><td>${esc(r.dt)}</td>
+        <td>${esc(FORMAT[r.dt])}</td><td>${esc(r.title)}</td><td>${fmtDate(r.date)}</td>
+        <td><a href="print/${slug(r.name)}.html">🖨 View</a> &nbsp; <a href="pdf/${slug(r.name)}.pdf" download>⬇ PDF</a></td></tr>`).join("")}
+      </tbody></table></div>`;
+  }
+
   function search(q) {
     sidebar("");
     const hits = [];
@@ -349,6 +373,7 @@
     else if (parts[0] === "form") form(parts[1], parts.slice(2).join("/"));
     else if (parts[0] === "report") report(parts[1], params);
     else if (parts[0] === "search") search(params.get("q") || "");
+    else if (parts[0] === "documents") documents();
     else home();
     window.scrollTo(0, 0);
   }

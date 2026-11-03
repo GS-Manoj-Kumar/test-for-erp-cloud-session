@@ -1,0 +1,106 @@
+{% include "cabinet_erp/templates/print/_style.html" %}
+<div class="cab-print">
+{% include "cabinet_erp/templates/print/_header.html" %}
+{% set d = p.doc %}
+<table>
+  <tr>
+    <td style="width:55%" class="box">
+      <div class="label">Bill to</div>
+      <div><b>{{ p.client.client_name or d.client_name }}</b> ({{ d.client }})</div>
+      {% if p.client.billing_address %}<div>{{ p.client.billing_address }}</div>{% endif %}
+      {% if p.client.gstin %}<div>GSTIN: <b>{{ p.client.gstin }}</b></div>{% endif %}
+      {% if p.client.state %}<div>State: {{ p.client.state }}</div>{% endif %}
+      {% if p.client.phone or p.client.email %}<div class="muted">{{ p.client.phone or "" }} {{ p.client.email or "" }}</div>{% endif %}
+    </td>
+    <td style="width:45%" class="box">
+      <table>
+        <tr><td class="label">Place of supply</td><td>{{ d.place_of_supply or "" }}</td></tr>
+        {% if d.due_date %}<tr><td class="label">Due date</td><td>{{ d.due_date | cab_date }}</td></tr>{% endif %}
+        {% if d.project %}<tr><td class="label">Project</td><td>{{ d.project }}</td></tr>{% endif %}
+        {% if d.production_order %}<tr><td class="label">Order</td><td>{{ d.production_order }}</td></tr>{% endif %}
+        {% if d.return_against %}<tr><td class="label">Against invoice</td><td>{{ d.return_against }}</td></tr>{% endif %}
+        <tr><td class="label">Tax</td><td>{{ "IGST (inter-state)" if p.inter_state else "CGST + SGST (intra-state)" }}</td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<h4>Items</h4>
+<table class="grid">
+  <thead><tr>
+    <th class="c" style="width:4%">#</th><th>Description</th><th style="width:10%">HSN/SAC</th>
+    <th class="r" style="width:8%">Qty</th><th style="width:6%">UOM</th><th class="r" style="width:12%">Rate</th>
+    <th class="r" style="width:7%">GST %</th><th class="r" style="width:13%">Taxable Value</th>
+  </tr></thead>
+  <tbody>
+  {% for it in d["items"] %}
+    <tr>
+      <td class="c">{{ loop.index }}</td><td>{{ it.description }}</td><td>{{ it.hsn_sac or "" }}</td>
+      <td class="r">{{ it.qty | cab_qty }}</td><td>{{ it.uom or "" }}</td><td class="r">{{ it.rate | cab_inr }}</td>
+      <td class="r">{{ it.gst_rate }}</td><td class="r">{{ it.amount | cab_inr }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<table>
+  <tr>
+    <td style="width:58%">
+      <h4>GST summary</h4>
+      <table class="grid">
+        <thead><tr>
+          <th class="r">Rate</th><th class="r">Taxable</th>
+          {% if p.inter_state %}<th class="r">IGST</th>{% else %}<th class="r">CGST</th><th class="r">SGST</th>{% endif %}
+          <th class="r">Total Tax</th>
+        </tr></thead>
+        <tbody>
+        {% for g in p.gst_rows %}
+          <tr>
+            <td class="r">{{ g.rate }}%</td><td class="r">{{ g.taxable | cab_inr }}</td>
+            {% if p.inter_state %}<td class="r">{{ g.igst | cab_inr }}</td>
+            {% else %}<td class="r">{{ g.cgst | cab_inr }} <span class="muted small">@{{ g.half_rate | cab_qty }}%</span></td>
+                      <td class="r">{{ g.sgst | cab_inr }} <span class="muted small">@{{ g.half_rate | cab_qty }}%</span></td>{% endif %}
+            <td class="r">{{ g.total_tax | cab_inr }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </td>
+    <td style="width:42%">
+      <h4>&nbsp;</h4>
+      <table class="grid">
+        <tr><td>Taxable value</td><td class="r">{{ d.net_total | cab_inr }}</td></tr>
+        {% if p.inter_state %}
+          <tr><td>IGST</td><td class="r">{{ d.igst | cab_inr }}</td></tr>
+        {% else %}
+          <tr><td>CGST</td><td class="r">{{ d.cgst | cab_inr }}</td></tr>
+          <tr><td>SGST</td><td class="r">{{ d.sgst | cab_inr }}</td></tr>
+        {% endif %}
+        {% if d.rounding_adjustment %}<tr><td>Rounding</td><td class="r">{{ d.rounding_adjustment | cab_inr }}</td></tr>{% endif %}
+        <tr class="total"><td>Total (INR)</td><td class="r">{{ d.rounded_total | cab_inr }}</td></tr>
+        {% if p.show_payment %}
+          <tr><td>Paid</td><td class="r">{{ d.paid_amount | cab_inr }}</td></tr>
+          {% if d.credited_amount %}<tr><td>Credit notes</td><td class="r">{{ d.credited_amount | cab_inr }}</td></tr>{% endif %}
+          <tr class="total"><td>Balance due</td><td class="r">{{ d.outstanding_amount | cab_inr }}</td></tr>
+        {% endif %}
+      </table>
+    </td>
+  </tr>
+</table>
+<div class="words"><b>Amount in words:</b> {{ p.amount_in_words }}</div>
+{% if p.show_payment %}
+  <p>Status: <span class="stamp{% if d.status == 'Paid' %} paid{% endif %}">{{ d.status | upper }}</span></p>
+{% endif %}
+{% if d.remarks %}<p class="muted">{{ d.remarks }}</p>{% endif %}
+
+<table class="sign" style="margin-top:16px">
+  <tr>
+    <td style="width:60%" class="small muted">
+      {% if d.invoice_type == "Quotation" %}This quotation is valid for 30 days.{% endif %}
+      {% if d.invoice_type == "Proforma" %}This is a proforma invoice and not a tax invoice.{% endif %}
+      This is a computer-generated document.
+    </td>
+    <td class="r">For {{ p.company.company_name or "" }}<br><br><br>Authorised Signatory</td>
+  </tr>
+</table>
+</div>

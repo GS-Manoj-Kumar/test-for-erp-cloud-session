@@ -18,7 +18,7 @@ Hierarchy: **Client (C0001)** → **Project (P0001)** → **Production Order (P0
 | 2 | Production Order + F4P import | done |
 | 3 | Inventory | done |
 | 4 | Billing | done |
-| 5 | CRM glue, roles, workspace | – |
+| 5 | CRM glue, roles, workspace + PDF print formats | done |
 
 ## Demo and live preview
 
@@ -53,6 +53,40 @@ Updating after pulling new commits:
 cd ~/frappe-bench/apps/cabinet_erp && git pull
 bench --site cabinet.localhost migrate
 ```
+
+## Roles
+
+| Role | Can do |
+|---|---|
+| **Cabinet Admin** | Everything |
+| **Sales** | Clients and projects (create/edit), invoices (create/edit, not submit), read orders and payments. Also give Sales users Frappe CRM's own **Sales User** role for leads and deals. |
+| **Production** | Production orders, stock items/locations, stock movements (incl. submit/cancel), stock reports |
+| **Accounts** | Invoices and payments (incl. submit/cancel), Cabinet Settings, all reports |
+
+The roles are created automatically on install / migrate. The **Cabinet ERP** workspace
+(sidebar) has shortcuts to everything.
+
+## CRM
+
+When a **CRM Deal** is set to **Won**, the app offers to create a Cabinet Client: a dialog
+in Desk, plus a to-do for the deal owner so the offer isn't missed in the CRM UI. A deal
+with an organization becomes a B2B client (or is linked to the existing client for that
+organization); a deal without one becomes B2C. The deal's **Cabinet Client** field shows the
+link; the Desk deal form also has a **Create Cabinet Client** button.
+
+## PDFs
+
+Four print formats; use **Print** or **Download PDF** on the form:
+
+| Print format | Doctype | Contents |
+|---|---|---|
+| Cabinet Tax Invoice (default) | Cabinet Invoice | GST invoice / proforma / quotation / credit note: GSTINs, place of supply, HSN table, CGST+SGST or IGST summary per rate, amount in words, paid / balance |
+| Payment Receipt | Payment Entry Lite | Amount, mode, reference, invoice balance |
+| Production Cutlist | Production Order | Seal details, material requirements, panels by material, full cutlist |
+| Delivery Challan | Stock Movement | From / to, items, urgent-transfer reason |
+
+The templates live in `cabinet_erp/templates/print/`. The demo site renders the same
+templates and publishes the PDFs (see **Print & PDF** there).
 
 ## Tests
 

@@ -1,0 +1,15 @@
+<table>
+  <tr>
+    <td style="width:60%">
+      <div class="company">{{ p.company.company_name or "" }}</div>
+      {% if p.company.company_gstin %}<div>GSTIN: <b>{{ p.company.company_gstin }}</b></div>{% endif %}
+      {% if p.company.company_state %}<div class="muted">State: {{ p.company.company_state }}</div>{% endif %}
+    </td>
+    <td class="r" style="width:40%">
+      <div class="title">{{ p.title }}</div>
+      <div><b>{{ p.doc.name }}</b></div>
+      <div class="muted">Date: {{ p.doc.posting_date | cab_date }}</div>
+    </td>
+  </tr>
+</table>
+<hr>

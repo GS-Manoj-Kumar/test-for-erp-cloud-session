@@ -22,9 +22,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install pytest && python -m pytest -q
-      - name: Build demo data from the app's own logic
+      - run: pip install pytest jinja2 && python -m pytest -q
+      - name: Build demo data and print pages from the app's own logic / templates
         run: python scripts/build_demo_site.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Make PDFs with headless Chromium
+        run: |
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+          node scripts/make_pdfs.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -1,0 +1,23 @@
+{% include "cabinet_erp/templates/print/_style.html" %}
+<div class="cab-print">
+{% include "cabinet_erp/templates/print/_header.html" %}
+{% set d = p.doc %}
+<p>Received with thanks from <b>{{ p.client.client_name or d.client_name }}</b> ({{ d.client }})
+  the sum of <b>{{ d.amount | cab_inr }}</b> ({{ p.amount_in_words }})
+  by <b>{{ d.mode }}</b>{% if d.reference_no %}, reference <b>{{ d.reference_no }}</b>{% endif %},
+  against invoice <b>{{ d.invoice }}</b>.</p>
+<table class="grid" style="width:60%">
+  <tr><td>Invoice</td><td>{{ d.invoice }}</td></tr>
+  {% if p.invoice %}
+    <tr><td>Invoice date</td><td>{{ p.invoice.posting_date | cab_date }}</td></tr>
+    <tr><td>Invoice total</td><td class="r">{{ p.invoice.rounded_total | cab_inr }}</td></tr>
+  {% endif %}
+  <tr class="total"><td>This payment</td><td class="r">{{ d.amount | cab_inr }}</td></tr>
+  {% if p.invoice %}<tr><td>Balance due after all payments</td><td class="r">{{ p.invoice.outstanding_amount | cab_inr }}</td></tr>{% endif %}
+</table>
+{% if d.remarks %}<p class="muted">{{ d.remarks }}</p>{% endif %}
+<table class="sign" style="margin-top:24px">
+  <tr><td class="small muted">This is a computer-generated receipt.</td>
+      <td class="r">For {{ p.company.company_name or "" }}<br><br><br>Authorised Signatory</td></tr>
+</table>
+</div>
