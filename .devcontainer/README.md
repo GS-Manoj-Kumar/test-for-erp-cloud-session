@@ -5,6 +5,8 @@ This codespace runs the real app: Frappe v15, Frappe CRM, and `cabinet_erp`, wit
 1. **First start only:** setup runs by itself (bench init, CRM, site, demo data). It takes
    about 10–15 minutes. Watch it in the "Creating codespace" log.
 2. Open the **Ports** tab and click the globe next to port **8000** (it usually opens by itself).
+   If it shows **502**, use port **8080** instead (same app, via a small bridge started by
+   `start.sh`). Port 9000 is Frappe's realtime service, not a web page.
 3. Log in as **Administrator** / **admin**.
 4. Try `/app/cabinet-client`, `/app/production-order`, `/app/query-report/Stock Balance`,
    `/app/query-report/Receivables Ageing`.

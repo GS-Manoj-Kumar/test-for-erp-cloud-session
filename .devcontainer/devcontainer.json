@@ -4,15 +4,40 @@
   "service": "frappe",
   "workspaceFolder": "/workspace",
   "remoteUser": "frappe",
-  "forwardPorts": [8000],
+  "forwardPorts": [
+    8000,
+    8080
+  ],
   "portsAttributes": {
-    "8000": { "label": "Cabinet ERP", "onAutoForward": "openBrowser" }
+    "8000": {
+      "label": "Cabinet ERP",
+      "onAutoForward": "openBrowser"
+    },
+    "8080": {
+      "label": "Cabinet ERP (use if 8000 shows 502)",
+      "onAutoForward": "silent"
+    },
+    "9000": {
+      "label": "Frappe realtime (not a web page)",
+      "onAutoForward": "silent"
+    }
   },
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postStartCommand": "bash .devcontainer/start.sh",
-  "hostRequirements": { "cpus": 4, "memory": "8gb" },
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb"
+  },
   "customizations": {
-    "codespaces": { "openFiles": [".devcontainer/README.md"] },
-    "vscode": { "extensions": ["ms-python.python"] }
+    "codespaces": {
+      "openFiles": [
+        ".devcontainer/README.md"
+      ]
+    },
+    "vscode": {
+      "extensions": [
+        "ms-python.python"
+      ]
+    }
   }
 }
