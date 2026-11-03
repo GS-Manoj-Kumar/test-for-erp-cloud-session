@@ -1,0 +1,254 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "format:{project}-ORD-{##}",
+ "creation": "2026-11-03 13:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "order_title",
+  "project",
+  "project_name",
+  "column_break_main",
+  "status",
+  "client",
+  "client_name",
+  "section_f4p",
+  "seal_id",
+  "sealed_at",
+  "sealer_version",
+  "skp_name",
+  "f4p_file",
+  "column_break_f4p",
+  "panel_count",
+  "variety_count",
+  "sheet_count",
+  "f4p_warnings",
+  "section_costs",
+  "cost_core",
+  "cost_laminate",
+  "cost_glue",
+  "column_break_costs",
+  "cost_edge_band",
+  "cost_grand",
+  "section_materials",
+  "material_lines"
+ ],
+ "fields": [
+  {
+   "bold": 1,
+   "fieldname": "order_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Order Title"
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Project",
+   "options": "Cabinet Project",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fetch_from": "project.project_name",
+   "fieldname": "project_name",
+   "fieldtype": "Data",
+   "label": "Project Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nReleased\nCutting\nEdge Banding\nPacked\nDispatched\nDelivered\nCancelled",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "project.client",
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Client",
+   "options": "Cabinet Client",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "client.client_name",
+   "fieldname": "client_name",
+   "fieldtype": "Data",
+   "label": "Client Name",
+   "read_only": 1
+  },
+  {
+   "collapsible": 0,
+   "fieldname": "section_f4p",
+   "fieldtype": "Section Break",
+   "label": "F4P Seal"
+  },
+  {
+   "fieldname": "seal_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Seal ID",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "sealed_at",
+   "fieldtype": "Datetime",
+   "label": "Sealed At",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "sealer_version",
+   "fieldtype": "Data",
+   "label": "Sealer Version",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "skp_name",
+   "fieldtype": "Data",
+   "label": "SketchUp File",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "f4p_file",
+   "fieldtype": "Attach",
+   "label": "F4P File",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_f4p",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "panel_count",
+   "fieldtype": "Int",
+   "label": "Panel Count",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "variety_count",
+   "fieldtype": "Int",
+   "label": "Variety Count",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "sheet_count",
+   "fieldtype": "Int",
+   "label": "Sheet Count",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "f4p_warnings",
+   "fieldname": "f4p_warnings",
+   "fieldtype": "Small Text",
+   "label": "Import Warnings",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_costs",
+   "fieldtype": "Section Break",
+   "label": "Costs (from F4P)"
+  },
+  {
+   "fieldname": "cost_core",
+   "fieldtype": "Currency",
+   "label": "Core",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cost_laminate",
+   "fieldtype": "Currency",
+   "label": "Laminate",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cost_glue",
+   "fieldtype": "Currency",
+   "label": "Glue",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_costs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cost_edge_band",
+   "fieldtype": "Currency",
+   "label": "Edge Band",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "cost_grand",
+   "fieldtype": "Currency",
+   "label": "Grand Total",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_materials",
+   "fieldtype": "Section Break",
+   "label": "Material Requirements"
+  },
+  {
+   "fieldname": "material_lines",
+   "fieldtype": "Table",
+   "label": "Material Lines",
+   "no_copy": 1,
+   "options": "Order Material Line"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-03 13:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Production",
+ "name": "Production Order",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "order_title,project,client,status",
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "order_title",
+ "track_changes": 1
+}

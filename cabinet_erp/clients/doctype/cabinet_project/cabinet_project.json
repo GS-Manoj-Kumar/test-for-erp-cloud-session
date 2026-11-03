@@ -1,0 +1,174 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "P.####",
+ "creation": "2026-11-03 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "project_name",
+  "client",
+  "client_name",
+  "project_type",
+  "property_type",
+  "column_break_main",
+  "milestone",
+  "assigned_designer",
+  "assigned_pm",
+  "section_dates",
+  "token_booking",
+  "advance_paid",
+  "confirmation",
+  "column_break_dates",
+  "target_handover",
+  "estimated_handover",
+  "actual_handover",
+  "section_nas",
+  "nas_path"
+ ],
+ "fields": [
+  {
+   "bold": 1,
+   "fieldname": "project_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Project Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Client",
+   "options": "Cabinet Client",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "client.client_name",
+   "fieldname": "client_name",
+   "fieldtype": "Data",
+   "label": "Client Name",
+   "read_only": 1
+  },
+  {
+   "description": "Defaults from the client",
+   "fieldname": "project_type",
+   "fieldtype": "Select",
+   "label": "Project Type",
+   "options": "B2B\nB2C"
+  },
+  {
+   "description": "e.g. Apartment, Villa, Office",
+   "fieldname": "property_type",
+   "fieldtype": "Data",
+   "label": "Property Type"
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Enquiry",
+   "fieldname": "milestone",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Milestone",
+   "options": "Enquiry\nToken Booked\nAdvance Paid\nDesign\nConfirmed\nProduction\nDispatched\nInstalled\nHandover\nClosed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "assigned_designer",
+   "fieldtype": "Link",
+   "label": "Assigned Designer",
+   "options": "User"
+  },
+  {
+   "fieldname": "assigned_pm",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Assigned PM",
+   "options": "User"
+  },
+  {
+   "fieldname": "section_dates",
+   "fieldtype": "Section Break",
+   "label": "Dates"
+  },
+  {
+   "fieldname": "token_booking",
+   "fieldtype": "Date",
+   "label": "Token Booking"
+  },
+  {
+   "fieldname": "advance_paid",
+   "fieldtype": "Date",
+   "label": "Advance Paid"
+  },
+  {
+   "fieldname": "confirmation",
+   "fieldtype": "Date",
+   "label": "Confirmation"
+  },
+  {
+   "fieldname": "column_break_dates",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "target_handover",
+   "fieldtype": "Date",
+   "label": "Target Handover"
+  },
+  {
+   "fieldname": "estimated_handover",
+   "fieldtype": "Date",
+   "label": "Estimated Handover"
+  },
+  {
+   "fieldname": "actual_handover",
+   "fieldtype": "Date",
+   "label": "Actual Handover"
+  },
+  {
+   "fieldname": "section_nas",
+   "fieldtype": "Section Break",
+   "label": "NAS"
+  },
+  {
+   "description": "Project folder on the NAS (display only)",
+   "fieldname": "nas_path",
+   "fieldtype": "Data",
+   "label": "NAS Path"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-03 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Clients",
+ "name": "Cabinet Project",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "project_name,client,client_name,milestone",
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "project_name",
+ "track_changes": 1
+}

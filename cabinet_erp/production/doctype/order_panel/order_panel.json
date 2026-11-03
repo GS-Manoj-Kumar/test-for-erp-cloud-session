@@ -1,0 +1,199 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "hash",
+ "creation": "2026-11-03 13:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "production_order",
+  "panel_id",
+  "panel_index",
+  "quantity",
+  "code_name_1",
+  "code_name_2",
+  "code_name_3",
+  "column_break_main",
+  "material_name",
+  "thickness",
+  "shape_type",
+  "grain",
+  "section_size",
+  "finished_length",
+  "finished_width",
+  "area",
+  "column_break_size",
+  "sheet_index",
+  "board_index",
+  "pack_group",
+  "section_status",
+  "edge_band_summary",
+  "exclusion_status",
+  "warnings"
+ ],
+ "fields": [
+  {
+   "fieldname": "production_order",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Production Order",
+   "options": "Production Order",
+   "reqd": 1
+  },
+  {
+   "fieldname": "panel_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Panel ID"
+  },
+  {
+   "fieldname": "panel_index",
+   "fieldtype": "Int",
+   "label": "Panel Index"
+  },
+  {
+   "default": "1",
+   "fieldname": "quantity",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Quantity"
+  },
+  {
+   "fieldname": "code_name_1",
+   "fieldtype": "Data",
+   "label": "Code Name 1"
+  },
+  {
+   "fieldname": "code_name_2",
+   "fieldtype": "Data",
+   "label": "Code Name 2"
+  },
+  {
+   "fieldname": "code_name_3",
+   "fieldtype": "Data",
+   "label": "Code Name 3"
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "material_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Material"
+  },
+  {
+   "fieldname": "thickness",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Thickness (mm)"
+  },
+  {
+   "fieldname": "shape_type",
+   "fieldtype": "Data",
+   "label": "Shape Type"
+  },
+  {
+   "fieldname": "grain",
+   "fieldtype": "Data",
+   "label": "Grain"
+  },
+  {
+   "fieldname": "section_size",
+   "fieldtype": "Section Break",
+   "label": "Size and Placement"
+  },
+  {
+   "fieldname": "finished_length",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Finished Length (mm)"
+  },
+  {
+   "fieldname": "finished_width",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Finished Width (mm)"
+  },
+  {
+   "fieldname": "area",
+   "fieldtype": "Float",
+   "label": "Area (mm\u00b2)"
+  },
+  {
+   "fieldname": "column_break_size",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sheet_index",
+   "fieldtype": "Int",
+   "label": "Sheet Index"
+  },
+  {
+   "fieldname": "board_index",
+   "fieldtype": "Int",
+   "label": "Board Index"
+  },
+  {
+   "fieldname": "pack_group",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Pack Group"
+  },
+  {
+   "fieldname": "section_status",
+   "fieldtype": "Section Break",
+   "label": "Edge Band and Status"
+  },
+  {
+   "fieldname": "edge_band_summary",
+   "fieldtype": "Small Text",
+   "label": "Edge Band Summary"
+  },
+  {
+   "fieldname": "exclusion_status",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Exclusion Status"
+  },
+  {
+   "fieldname": "warnings",
+   "fieldtype": "Small Text",
+   "label": "Warnings"
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-03 13:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Production",
+ "name": "Order Panel",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "read_only": 1,
+ "search_fields": "panel_id,production_order,material_name",
+ "sort_field": "panel_index",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "panel_id",
+ "track_changes": 0
+}
