@@ -12,7 +12,7 @@ Hierarchy: **Client (C0001)** → **Project (P0001)** → **Production Order (P0
 | 1 | Scaffold, Cabinet Client, Cabinet Project | done |
 | 2 | Production Order + F4P import | done |
 | 3 | Inventory | done |
-| 4 | Billing | – |
+| 4 | Billing | done |
 | 5 | CRM glue, roles, workspace | – |
 
 ## Local install
@@ -71,7 +71,9 @@ cabinet_erp/            Frappe app package
   inventory/doctype/    Stock Item, Stock Location, Stock Movement, Stock Ledger Entry
   inventory/report/     Stock Balance, Stock Ledger, Order Material Status
   inventory/stock_logic.py   pure-Python balance / transfer rules
-  billing/              (Phase 4)
+  billing/doctype/      Cabinet Settings, Cabinet Invoice, Cabinet Invoice Item, Payment Entry Lite
+  billing/report/       Invoice Register, Receivables Ageing, Project Billing Summary
+  billing/billing_logic.py   pure-Python GST / outstanding / status rules
   utils/gst.py          pure-Python GSTIN helpers
 tests/                  plain-pytest suite + fixtures/f4p.sqlite
 DECISIONS.md            choices made where the spec was open
@@ -99,3 +101,17 @@ Store, or one per client / project / order), then one of:
 Cancelling a movement writes reversing ledger rows; ledger rows are never edited or deleted.
 Reports: **Stock Balance**, **Stock Ledger**, **Order Material Status** (map Order Material
 Lines to Stock Items first).
+
+## Billing
+
+First set **Cabinet Settings → Company State** (and GSTIN). Invoices use it to choose
+CGST + SGST (same state as the place of supply) or IGST (other state).
+
+- **Cabinet Invoice** types: Quotation, Proforma, Tax Invoice, Credit Note. Only a Tax Invoice
+  carries an outstanding amount; the others show status *Issued*.
+- On a draft invoice with an order selected, **Make from Order** fills items from the order's
+  material lines or adds one lump-sum line at the order cost. Production Order → **Create →
+  Invoice** starts one prefilled.
+- Record money with **Payment Entry Lite** (Tax Invoice → Create → Payment). A **Credit Note**
+  against a Tax Invoice reduces its outstanding.
+- Overdue status is updated by a daily scheduler job (`bench enable-scheduler`).

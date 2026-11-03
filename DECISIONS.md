@@ -91,3 +91,48 @@ Choices made where `CLAUDE.md` left room. Newest phase last.
     Stock Balance has an "As On" date. Stock Ledger shows a running balance that starts from
     the balance before From Date.
 36. Quantities are rounded to 6 decimals in all checks, so 0.1 + 0.2 covers 0.3.
+
+## Phase 4 — Billing
+
+37. **Company state comes from a new single doctype, Cabinet Settings** (company name,
+    GSTIN, state, default GST rate 18%, default due days 15). The spec didn't say where the
+    seller's state lives, and GST needs it.
+38. **Place of supply** defaults to the client's state, else the company state. Same state →
+    CGST + SGST, else IGST. An empty place of supply counts as the same state.
+39. **GST is computed per rate group** (sum of line amounts × rate), rounded to paise. CGST and
+    SGST are each half-rate and rounded separately, so they're always equal. Amounts use
+    Decimal. `rounded_total` = nearest rupee, with .50 rounding up.
+40. **Only Tax Invoices are receivables.** Quotation, Proforma and Credit Note have outstanding
+    0 and an extra status, **Issued**, which isn't in the spec list. Payments are only allowed
+    against submitted Tax Invoices, and never above the outstanding (no overpayment / advances in v1).
+41. **Credit Note** needs `Against Invoice` (a submitted Tax Invoice for the same client). It
+    can't exceed that invoice's outstanding. On submit or cancel it updates the invoice's
+    `credited_amount`. Outstanding = rounded_total − paid − credited.
+42. **Status:** Overdue wins over Unpaid / Partly Paid once the due date has passed (due today
+    is not overdue). Paid wins over everything. Paid / credited / outstanding / status are
+    always recomputed from the submitted payments and credit notes, not added up, so cancels
+    can't drift them.
+43. **Concurrency:** the invoice row is locked (`FOR UPDATE`) before a payment or credit note is
+    checked against its outstanding.
+44. **Cancel rules** come from Frappe's link checks: an invoice with submitted payments or credit
+    notes can't be cancelled until they are.
+45. **Due date** only applies to Tax Invoices. It defaults to posting date + default due days
+    and can't be before the posting date.
+46. **Project / order filters:** choosing an order fills its project. The project must belong
+    to the client and the order to the project.
+47. **Make from Order:** "lines" gives one row per material line (qty = order_qty, rate =
+    unit_price, UOM Sheet / m / kg). "lump_sum" gives one row at `cost_grand`. Both use the
+    default GST rate. HSN/SAC is left blank to fill in.
+48. **Payment reference_no** is required for every mode except Cash.
+49. **Reports:** the Invoice Register shows Credit Notes as negative so the totals row nets them,
+    and hides cancelled invoices unless Status = Cancelled. Receivables Ageing counts days from the due
+    date (posting date if none). Not-yet-due goes in 0–30, and it uses the current outstanding.
+    Project Billing Summary: invoiced = Tax Invoices − Credit Notes; margin = invoiced excl.
+    GST − sum of non-cancelled orders' `cost_grand`.
+50. **Daily scheduler** (`billing.tasks.mark_overdue`) re-checks submitted, unpaid Tax Invoices
+    that are past due.
+
+## Process
+
+51. From Phase 4 on, the owner asked to merge straight to `main` instead of leaving PRs open.
+    PR #1 (Phases 1–4) was merged by Claude.

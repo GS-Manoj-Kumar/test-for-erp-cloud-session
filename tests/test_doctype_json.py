@@ -45,7 +45,9 @@ def test_some_doctypes_exist():
     names = our_doctypes()
     assert {"Cabinet Client", "Cabinet Project", "Production Order",
             "Order Panel", "Order Material Line", "Stock Item", "Stock Location",
-            "Stock Movement", "Stock Movement Item", "Stock Ledger Entry"} <= names
+            "Stock Movement", "Stock Movement Item", "Stock Ledger Entry",
+            "Cabinet Settings", "Cabinet Invoice", "Cabinet Invoice Item",
+            "Payment Entry Lite"} <= names
 
 
 def test_modules_have_packages():
@@ -107,6 +109,27 @@ def test_naming():
     assert by_name["Cabinet Client"]["autoname"] == "C.####"
     assert by_name["Cabinet Project"]["autoname"] == "P.####"
     assert by_name["Production Order"]["autoname"] == "format:{project}-ORD-{##}"
+    assert by_name["Cabinet Invoice"]["autoname"] == "INV-.YY.-.####"
+
+
+def test_invoice_fields():
+    inv = {f["fieldname"]: f for f in load(
+        os.path.join(APP, "billing", "doctype", "cabinet_invoice", "cabinet_invoice.json"))["fields"]}
+    for f in ("net_total", "cgst", "sgst", "igst", "grand_total", "rounded_total", "paid_amount",
+              "outstanding_amount", "status", "place_of_supply", "due_date"):
+        assert f in inv, f
+    assert inv["status"]["options"].split("\n") == [
+        "Draft", "Issued", "Unpaid", "Partly Paid", "Paid", "Overdue", "Cancelled"]
+    for f in ("status", "paid_amount", "credited_amount", "outstanding_amount"):
+        assert inv[f].get("allow_on_submit") == 1, f
+    item = {f["fieldname"]: f for f in load(
+        os.path.join(APP, "billing", "doctype", "cabinet_invoice_item", "cabinet_invoice_item.json"))["fields"]}
+    assert item["gst_rate"]["options"].split("\n") == ["0", "5", "12", "18", "28"]
+
+
+def test_scheduler_hook():
+    hooks = open(os.path.join(APP, "hooks.py")).read()
+    assert "cabinet_erp.billing.tasks.mark_overdue" in hooks
 
 
 def test_order_panel_fields_match_parser():
@@ -148,7 +171,8 @@ REPORT_FILES = sorted(glob.glob(os.path.join(APP, "*", "report", "*", "*.json"))
 
 def test_reports_exist():
     names = {load(p)["name"] for p in REPORT_FILES}
-    assert {"Stock Balance", "Stock Ledger", "Order Material Status"} <= names
+    assert {"Stock Balance", "Stock Ledger", "Order Material Status", "Invoice Register",
+            "Receivables Ageing", "Project Billing Summary"} <= names
 
 
 @pytest.mark.parametrize("path", REPORT_FILES, ids=lambda p: os.path.basename(p))

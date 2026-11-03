@@ -8,6 +8,13 @@ frappe.ui.form.on("Production Order", {
 		if (frm.doc.status !== "Cancelled") {
 			frm.add_custom_button(__("Import F4P"), () => import_f4p_dialog(frm));
 		}
+		frm.add_custom_button(__("Invoice"), () => {
+			frappe.new_doc("Cabinet Invoice", {
+				client: frm.doc.client,
+				project: frm.doc.project,
+				production_order: frm.doc.name,
+			});
+		}, __("Create"));
 		frm.add_custom_button(__("Panels"), () => {
 			frappe.set_route("List", "Order Panel", { production_order: frm.doc.name });
 		}, __("View"));

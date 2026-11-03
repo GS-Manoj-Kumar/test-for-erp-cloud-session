@@ -14,4 +14,7 @@ after_migrate = "cabinet_erp.install.after_migrate"
 
 # Phase 5 will add: doc_events for "CRM Deal" (Won -> Cabinet Client),
 # fixtures for roles, and the workspace.
-# Phase 4 will add: scheduler_events for the daily Overdue invoice check.
+
+scheduler_events = {
+	"daily": ["cabinet_erp.billing.tasks.mark_overdue"],
+}
