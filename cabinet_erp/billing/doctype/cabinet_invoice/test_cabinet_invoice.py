@@ -63,3 +63,13 @@ class TestCabinetInvoice(FrappeTestCase):
 		inv.reload()
 		self.assertEqual((inv.credited_amount, inv.outstanding_amount, inv.status), (1180, 10620, "Partly Paid"))
 		self.assertEqual(frappe.db.get_value("Cabinet Invoice", cn.name, "status"), "Issued")
+
+	def test_pdf_print_format(self):
+		inv = self.invoice(self.client_mh)
+		inv.submit()
+		html = frappe.get_print("Cabinet Invoice", inv.name, print_format="Cabinet Tax Invoice")
+		self.assertIn("TAX INVOICE", html)
+		self.assertIn("IGST (inter-state)", html)
+		self.assertIn("Rupees Eleven Thousand Eight Hundred Only", html)
+		pdf = frappe.get_print("Cabinet Invoice", inv.name, print_format="Cabinet Tax Invoice", as_pdf=True)
+		self.assertTrue(pdf.startswith(b"%PDF"))

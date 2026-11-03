@@ -155,3 +155,39 @@ Choices made where `CLAUDE.md` left room. Newest phase last.
 54. **CI:** `tests.yml` runs pytest, json.tool and the demo build on every push and PR.
     `pages.yml` deploys the site from `main`. GitHub Pages has to be switched to
     "GitHub Actions" once in the repo settings.
+
+## Phase 5 — CRM glue, roles, workspace, PDFs
+
+55. **Roles** (Cabinet Admin, Sales, Production, Accounts) are created in code
+    (`before_install` / `before_migrate`, so they exist before doctype permissions sync),
+    not as fixtures. System Manager keeps full access everywhere.
+56. **Permission matrix** (spec §5):
+    - Sales: clients and projects get create/edit, invoices get create/edit but not submit,
+      orders and payments are read-only.
+    - Production: orders, stock items, locations and movements, including submit/cancel.
+    - Accounts: invoices and payments including submit/cancel, plus Cabinet Settings.
+    - Everyone else gets read where they need it for links.
+    - Stock Ledger Entry is read-only for every role.
+    - Reports follow their module.
+57. **CRM permissions are not changed.** Adding Custom DocPerms to CRM doctypes would replace
+    CRM's own standard permissions. Sales users should also get CRM's built-in "Sales User" role.
+58. **Deal Won → client:** `doc_events` on CRM Deal `on_update`, which fires only on the
+    transition to Won (not on later saves).
+    - If the deal's organization is already a client, it is linked silently.
+    - Otherwise the user gets a dialog with a "Create Cabinet Client" server action, and the deal
+      owner gets a ToDo, because the CRM's Vue UI doesn't run Desk form scripts.
+    - The link is stored on a custom field `CRM Deal.cabinet_client`, created in `after_migrate`,
+      and on `Cabinet Client.crm_deal`.
+    - Client type: B2B if the deal has an organization, else B2C. The primary contact comes from
+      the deal's contacts table.
+59. **Workspace "Cabinet ERP"** (module Clients): 8 shortcuts and 7 link cards, CRM included.
+60. **PDFs:** four standard Jinja Print Formats. Each one is a one-line `include` of a template
+    in `templates/print/`, with data from `cabinet_print(doc)` (a registered Jinja method).
+    The templates only use that dict plus three `cab_*` filters, so the static demo renders
+    the very same files with plain Jinja2 and makes real PDFs with headless Chromium in CI.
+    The layout is table-based because Frappe's default PDF engine (wkhtmltopdf) has weak CSS
+    support. Each print format is the default for its doctype, and the forms get a
+    **Download PDF** button that uses Frappe's own `download_pdf` endpoint.
+61. **Amount in words** uses the Indian system (lakh / crore) and is written in Python, not
+    Frappe's `money_in_words`, so the demo build doesn't need Frappe. The GST summary per rate
+    is rounded exactly like the invoice totals, and a test checks they match.

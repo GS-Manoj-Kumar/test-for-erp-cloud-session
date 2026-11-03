@@ -12,6 +12,14 @@ frappe.ui.form.on("Payment Entry Lite", {
 			},
 		}));
 	},
+	refresh(frm) {
+		if (!frm.is_new()) {
+			frm.add_custom_button(__("Download PDF"), () => {
+				const args = new URLSearchParams({ doctype: frm.doctype, name: frm.doc.name, format: "Payment Receipt", no_letterhead: 1 });
+				window.open(`/api/method/frappe.utils.print_format.download_pdf?${args}`);
+			});
+		}
+	},
 	invoice(frm) {
 		if (!frm.doc.invoice) return;
 		frappe.db.get_value("Cabinet Invoice", frm.doc.invoice, ["client", "outstanding_amount"]).then((r) => {

@@ -1,0 +1,64 @@
+{% include "cabinet_erp/templates/print/_style.html" %}
+<div class="cab-print">
+{% set d = p.doc %}
+<table>
+  <tr>
+    <td style="width:60%">
+      <div class="company">{{ p.company.company_name or "" }}</div>
+      <div class="title">{{ p.title }}</div>
+    </td>
+    <td class="r">
+      <div><b>{{ d.name }}</b></div>
+      <div>{{ d.order_title or "" }}</div>
+      <div class="muted">Status: {{ d.status }}</div>
+    </td>
+  </tr>
+</table>
+<hr>
+<table class="grid">
+  <tr><td class="label">Project</td><td>{{ d.project }} {{ d.project_name or "" }}</td>
+      <td class="label">Client</td><td>{{ d.client }} {{ d.client_name or "" }}</td></tr>
+  <tr><td class="label">Seal ID</td><td>{{ d.seal_id or "not imported" }}</td>
+      <td class="label">SketchUp file</td><td>{{ d.skp_name or "" }}</td></tr>
+  <tr><td class="label">Panels</td><td>{{ d.panel_count or 0 }} ({{ p.panel_total_qty }} pcs, {{ p.panel_total_area_m2 }} m²)</td>
+      <td class="label">Sheets</td><td>{{ d.sheet_count or 0 }}</td></tr>
+</table>
+
+<h4>Material requirements</h4>
+<table class="grid">
+  <thead><tr><th>Kind</th><th>Description</th><th>Size</th><th class="r">Qty</th><th class="r">Order Qty</th>
+    <th class="r">Wastage %</th><th>Stock Item</th></tr></thead>
+  <tbody>
+  {% for l in d.material_lines %}
+    <tr><td>{{ l.kind }}</td><td>{{ l.description }}</td><td>{{ l.size or "" }}</td><td class="r">{{ l.qty | cab_qty }}</td>
+      <td class="r">{{ l.order_qty | cab_qty }}</td><td class="r">{{ l.wastage_pct | cab_qty }}</td><td>{{ l.stock_item or "" }}</td></tr>
+  {% else %}
+    <tr><td colspan="7" class="muted">No material lines.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h4>Panels by material</h4>
+<table class="grid" style="width:60%">
+  <thead><tr><th>Material</th><th class="r">Pieces</th></tr></thead>
+  <tbody>{% for g in p.panel_groups %}<tr><td>{{ g.material }}</td><td class="r">{{ g.qty }}</td></tr>{% endfor %}</tbody>
+</table>
+
+<h4>Cutlist</h4>
+<table class="grid small">
+  <thead><tr><th>#</th><th>Panel</th><th>Code</th><th>Material</th><th class="r">T</th><th class="r">Length</th>
+    <th class="r">Width</th><th class="r">Qty</th><th class="c">Grain</th><th class="c">Sheet</th><th>Pack</th><th>Edge band</th></tr></thead>
+  <tbody>
+  {% for x in p.panels %}
+    <tr><td>{{ x.panel_index }}</td><td>{{ x.panel_id }}</td><td>{{ x.code_name_1 or "" }}</td><td>{{ x.material_name }}</td>
+      <td class="r">{{ x.thickness | cab_qty }}</td><td class="r">{{ x.finished_length | cab_qty }}</td>
+      <td class="r">{{ x.finished_width | cab_qty }}</td><td class="r">{{ x.quantity }}</td><td class="c">{{ x.grain or "" }}</td>
+      <td class="c">{{ x.sheet_index if x.sheet_index is not none else "" }}</td><td>{{ x.pack_group or "" }}</td>
+      <td>{{ x.edge_band_summary or "" }}</td></tr>
+  {% else %}
+    <tr><td colspan="12" class="muted">No panels imported yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p class="small muted">Sizes in mm. Generated from sealed F4P data.</p>
+</div>

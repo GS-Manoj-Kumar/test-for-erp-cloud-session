@@ -9,6 +9,12 @@ frappe.ui.form.on("Stock Movement", {
 		frm.set_query("stock_item", "items", () => active);
 	},
 	refresh(frm) {
+		if (!frm.is_new()) {
+			frm.add_custom_button(__("Download PDF"), () => {
+				const args = new URLSearchParams({ doctype: frm.doctype, name: frm.doc.name, format: "Delivery Challan", no_letterhead: 1 });
+				window.open(`/api/method/frappe.utils.print_format.download_pdf?${args}`);
+			});
+		}
 		if (frm.doc.docstatus > 0) {
 			frm.add_custom_button(__("Ledger"), () => {
 				frappe.set_route("List", "Stock Ledger Entry", { movement: frm.doc.name });

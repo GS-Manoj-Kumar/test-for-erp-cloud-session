@@ -3,6 +3,12 @@
 
 frappe.ui.form.on("Production Order", {
 	refresh(frm) {
+		if (!frm.is_new()) {
+			frm.add_custom_button(__("Download PDF"), () => {
+				const args = new URLSearchParams({ doctype: frm.doctype, name: frm.doc.name, format: "Production Cutlist", no_letterhead: 1 });
+				window.open(`/api/method/frappe.utils.print_format.download_pdf?${args}`);
+			});
+		}
 		if (frm.is_new()) return;
 
 		if (frm.doc.status !== "Cancelled") {

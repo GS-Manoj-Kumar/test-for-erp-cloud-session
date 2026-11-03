@@ -14,7 +14,8 @@ DOCTYPE_FILES = sorted(glob.glob(os.path.join(APP, "*", "doctype", "*", "*.json"
 MODULES = [m.strip() for m in open(os.path.join(APP, "modules.txt")) if m.strip()]
 
 # Doctypes provided by frappe / crm that our Links may point to.
-EXTERNAL_DOCTYPES = {"User", "Contact", "Address", "CRM Organization", "CRM Deal", "File"}
+EXTERNAL_DOCTYPES = {"User", "Contact", "Address", "CRM Organization", "CRM Deal", "CRM Lead", "File"}
+ROLES = {"System Manager", "Cabinet Admin", "Sales", "Production", "Accounts"}
 
 VALID_FIELDTYPES = {
     "Attach", "Attach Image", "Check", "Column Break", "Currency", "Data", "Date",
@@ -193,3 +194,69 @@ def test_stock_ledger_entry_is_append_only():
     assert sle["in_create"] == 1
     for p in sle["permissions"]:
         assert not p.get("write") and not p.get("create") and not p.get("delete")
+
+
+def test_permissions_use_known_roles():
+    for path in DOCTYPE_FILES:
+        d = load(path)
+        if d.get("istable"):
+            continue
+        roles = {p["role"] for p in d["permissions"]}
+        assert roles <= ROLES, (d["name"], roles - ROLES)
+        assert {"System Manager", "Cabinet Admin"} <= roles, d["name"]
+    for path in REPORT_FILES:
+        roles = {r["role"] for r in load(path)["roles"]}
+        assert roles <= ROLES and "Cabinet Admin" in roles
+
+
+def test_role_matrix_highlights():
+    def perms(dt):
+        path = [p for p in DOCTYPE_FILES if load(p)["name"] == dt][0]
+        return {p["role"]: p for p in load(path)["permissions"]}
+    inv = perms("Cabinet Invoice")
+    assert inv["Accounts"].get("submit") and not inv["Sales"].get("submit") and inv["Sales"].get("write")
+    assert "Production" not in inv
+    mov = perms("Stock Movement")
+    assert mov["Production"].get("submit") and not mov["Accounts"].get("write")
+    for role, p in perms("Stock Ledger Entry").items():
+        assert not p.get("write") and not p.get("create")
+    assert perms("Cabinet Client")["Sales"].get("create")
+
+
+def test_install_creates_roles_before_sync():
+    src = open(os.path.join(APP, "install.py")).read()
+    for role in ROLES - {"System Manager"}:
+        assert f'"{role}"' in src
+    hooks = open(os.path.join(APP, "hooks.py")).read()
+    assert "before_install" in hooks and "before_migrate" in hooks
+
+
+def test_default_print_formats_exist():
+    formats = {load(p)["name"]: load(p)["doc_type"]
+               for p in glob.glob(os.path.join(APP, "*", "print_format", "*", "*.json"))}
+    for path in DOCTYPE_FILES:
+        d = load(path)
+        if d.get("default_print_format"):
+            assert formats.get(d["default_print_format"]) == d["name"]
+    assert set(formats.values()) == {"Cabinet Invoice", "Payment Entry Lite", "Production Order", "Stock Movement"}
+
+
+def test_workspace_links_resolve():
+    ws = load(os.path.join(APP, "clients", "workspace", "cabinet_erp", "cabinet_erp.json"))
+    reports = {load(p)["name"] for p in REPORT_FILES}
+    known = our_doctypes() | EXTERNAL_DOCTYPES
+    for l in ws["links"]:
+        if l["type"] == "Link":
+            assert l["link_to"] in (reports if l["link_type"] == "Report" else known), l["link_to"]
+    for s in ws["shortcuts"]:
+        assert s["link_to"] in (reports if s["type"] == "Report" else known)
+    content = json.loads(ws["content"])
+    cards = {c["data"]["card_name"] for c in content if c["type"] == "card"}
+    assert cards == {l["label"] for l in ws["links"] if l["type"] == "Card Break"}
+    assert {c["data"]["shortcut_name"] for c in content if c["type"] == "shortcut"} == {s["label"] for s in ws["shortcuts"]}
+
+
+def test_crm_hooks():
+    hooks = open(os.path.join(APP, "hooks.py")).read()
+    assert "cabinet_erp.clients.crm_glue.on_deal_update" in hooks
+    assert os.path.isfile(os.path.join(APP, "public", "js", "crm_deal.js"))

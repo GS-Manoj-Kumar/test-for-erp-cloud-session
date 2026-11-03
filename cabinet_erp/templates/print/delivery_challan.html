@@ -1,0 +1,28 @@
+{% include "cabinet_erp/templates/print/_style.html" %}
+<div class="cab-print">
+{% include "cabinet_erp/templates/print/_header.html" %}
+{% set d = p.doc %}
+<table class="grid">
+  <tr><td class="label">Movement</td><td>{{ d.movement_type }}{% if d.from_state %} (from {{ d.from_state }}){% endif %}</td></tr>
+  <tr><td class="label">From</td><td>{{ p.location_title or d.location }}</td></tr>
+  {% if d.target_location %}<tr><td class="label">To</td><td>{{ p.target_title or d.target_location }}</td></tr>{% endif %}
+  {% if p.client.client_name %}<tr><td class="label">Client</td><td>{{ p.client.client_name }}{% if p.client.shipping_address or p.client.billing_address %}<br>{{ p.client.shipping_address or p.client.billing_address }}{% endif %}</td></tr>{% endif %}
+  {% if d.is_urgent %}<tr><td class="label">Urgent transfer</td><td>{{ d.reason }} (approved by {{ d.approver }})</td></tr>{% endif %}
+</table>
+<h4>Items</h4>
+<table class="grid">
+  <thead><tr><th class="c">#</th><th>Item</th><th>Description</th><th class="r">Qty</th><th>UOM</th></tr></thead>
+  <tbody>
+  {% for it in d["items"] %}
+    <tr><td class="c">{{ loop.index }}</td><td>{{ it.stock_item }}</td><td>{{ it.item_name or "" }}</td>
+      <td class="r">{{ it.qty | cab_qty }}</td><td>{{ it.uom or "" }}</td></tr>
+  {% endfor %}
+  <tr class="total"><td></td><td colspan="2">Total quantity</td><td class="r">{{ d.total_qty | cab_qty }}</td><td></td></tr>
+  </tbody>
+</table>
+{% if d.remarks %}<p class="muted">{{ d.remarks }}</p>{% endif %}
+<p class="small muted">Goods sent for delivery / transfer, not for sale. No invoice value.</p>
+<table class="sign" style="margin-top:16px">
+  <tr><td>Received by (name, sign, date)</td><td class="r">For {{ p.company.company_name or "" }}<br><br><br>Authorised Signatory</td></tr>
+</table>
+</div>

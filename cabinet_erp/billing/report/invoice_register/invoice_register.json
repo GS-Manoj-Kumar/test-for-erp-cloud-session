@@ -21,6 +21,15 @@
  "roles": [
   {
    "role": "System Manager"
+  },
+  {
+   "role": "Cabinet Admin"
+  },
+  {
+   "role": "Accounts"
+  },
+  {
+   "role": "Sales"
   }
  ]
 }

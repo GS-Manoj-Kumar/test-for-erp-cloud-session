@@ -13,6 +13,12 @@ frappe.ui.form.on("Cabinet Invoice", {
 		}));
 	},
 	refresh(frm) {
+		if (!frm.is_new()) {
+			frm.add_custom_button(__("Download PDF"), () => {
+				const args = new URLSearchParams({ doctype: frm.doctype, name: frm.doc.name, format: "Cabinet Tax Invoice", no_letterhead: 1 });
+				window.open(`/api/method/frappe.utils.print_format.download_pdf?${args}`);
+			});
+		}
 		if (frm.doc.docstatus === 0 && frm.doc.production_order) {
 			frm.add_custom_button(__("Make from Order"), () => make_from_order(frm));
 		}

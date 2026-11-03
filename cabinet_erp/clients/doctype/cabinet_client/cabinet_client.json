@@ -11,6 +11,7 @@
   "column_break_main",
   "crm_organization",
   "primary_contact",
+  "crm_deal",
   "section_contact",
   "phone",
   "column_break_contact",
@@ -60,6 +61,15 @@
    "fieldtype": "Link",
    "label": "Primary Contact",
    "options": "Contact"
+  },
+  {
+   "description": "Set when the client was created from a won deal",
+   "fieldname": "crm_deal",
+   "fieldtype": "Link",
+   "label": "CRM Deal",
+   "no_copy": 1,
+   "options": "CRM Deal",
+   "read_only": 1
   },
   {
    "fieldname": "section_contact",
@@ -148,6 +158,43 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Cabinet Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Production"
+  },
+  {
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts"
   }
  ],
  "search_fields": "client_name,phone,email,gstin",

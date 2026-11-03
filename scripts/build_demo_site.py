@@ -5,6 +5,10 @@ GST / outstanding / status rules), so the demo shows what the real app computes.
 
     python scripts/build_demo_site.py          # writes site/data.json
     python -m http.server -d site 8080         # open http://localhost:8080
+    node scripts/make_pdfs.js                  # optional: site/print/*.html -> site/pdf/*.pdf
+
+It also renders the app's real print templates (cabinet_erp/templates/print/) into
+site/print/<name>.html with Jinja2, the same way Frappe renders the Print Formats.
 """
 
 import json
@@ -241,6 +245,86 @@ def build():
 	}
 
 
+PRINTS = [
+	# doctype, template, which docs
+	("Cabinet Invoice", "cabinet_invoice", None),
+	("Payment Entry Lite", "payment_receipt", None),
+	("Production Order", "production_cutlist", lambda d: d.get("material_lines")),
+	("Stock Movement", "delivery_challan", lambda d: d["movement_type"] in ("Dispatch", "Transfer")),
+]
+
+PRINT_PAGE = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<style>
+  @page {{ size: A4; margin: 12mm; }}
+  html, body {{ margin: 0; background: #fff; color: #111; }}
+  .sheet {{ max-width: 186mm; margin: 0 auto; padding: 12px; }}
+  .bar {{ font: 14px -apple-system, Segoe UI, Arial, sans-serif; padding: 10px 12px; background: #f4f5f6;
+         border-bottom: 1px solid #ddd; display: flex; gap: 14px; flex-wrap: wrap; }}
+  .bar a, .bar button {{ color: #2490ef; text-decoration: none; background: none; border: 0; font: inherit; cursor: pointer; padding: 0; }}
+  .cab-print {{ overflow-x: auto; }}
+  @media print {{ .bar {{ display: none; }} .sheet {{ padding: 0; }} }}
+</style></head>
+<body>
+<div class="bar"><a href="../#/form/{doctype_q}/{name_q}">&larr; Back to {name}</a>
+  <a href="../pdf/{name}.pdf" download>Download PDF</a>
+  <button onclick="window.print()">Print</button>
+  <span style="color:#6b7280">Demo, dummy data. Rendered from the app's own print template.</span></div>
+<div class="sheet">{body}</div>
+</body></html>
+"""
+
+
+def render_prints(data, out_dir):
+	"""Render every printable demo document with the app's Jinja templates. Returns {name: path}."""
+	try:
+		from jinja2 import FileSystemLoader, select_autoescape
+		from jinja2.sandbox import SandboxedEnvironment
+	except ImportError:
+		print("jinja2 not installed: skipping print pages (pip install jinja2)")
+		return {}
+	from urllib.parse import quote
+
+	from cabinet_erp.utils.print_logic import FILTERS, print_context
+
+	env = SandboxedEnvironment(loader=FileSystemLoader(ROOT), autoescape=select_autoescape(["html"]))
+	env.filters.update(FILTERS)
+	docs = data["docs"]
+	clients = {c["name"]: c for c in docs["Cabinet Client"]}
+	locations = {l["name"]: l for l in docs["Stock Location"]}
+	invoices = {i["name"]: i for i in docs["Cabinet Invoice"]}
+	company = data["meta"]["company"]
+	os.makedirs(out_dir, exist_ok=True)
+	written = {}
+	for doctype, template, keep in PRINTS:
+		tpl = env.get_template(f"cabinet_erp/templates/print/{template}.html")
+		for doc in docs[doctype]:
+			if keep and not keep(doc):
+				continue
+			client = clients.get(doc.get("client"), {})
+			extra = {}
+			if doctype == "Production Order":
+				extra["panels"] = sorted((x for x in docs["Order Panel"] if x["production_order"] == doc["name"]),
+				                         key=lambda x: x["panel_index"])
+			elif doctype == "Payment Entry Lite":
+				extra["invoice"] = invoices.get(doc["invoice"])
+			elif doctype == "Stock Movement":
+				extra["location_title"] = locations[doc["location"]]["title"]
+				if doc.get("target_location"):
+					extra["target_title"] = locations[doc["target_location"]]["title"]
+				loc = locations[doc.get("target_location") or doc["location"]]
+				client = clients.get(loc.get("client"), {})
+			p = print_context(doctype, doc, company=company, client=client, extra=extra)
+			body = tpl.render(p=p)
+			path = os.path.join(out_dir, f"{doc['name']}.html")
+			with open(path, "w") as f:
+				f.write(PRINT_PAGE.format(title=f"{p['title'].title()} {doc['name']}", body=body, name=doc["name"],
+				                          doctype_q=quote(doctype), name_q=quote(doc["name"])))
+			written[doc["name"]] = doctype
+	return written
+
+
 def _commit():
 	try:
 		return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
@@ -251,7 +335,8 @@ def _commit():
 if __name__ == "__main__":
 	out = os.path.join(ROOT, "site", "data.json")
 	data = build()
+	data["meta"]["prints"] = render_prints(data, os.path.join(ROOT, "site", "print"))
 	with open(out, "w") as f:
 		json.dump(data, f, indent=1, default=str)
 	counts = {k: len(v) for k, v in data["docs"].items()}
-	print(f"wrote {out}: {counts}")
+	print(f"wrote {out}: {counts}; print pages: {len(data['meta']['prints'])}")
