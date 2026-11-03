@@ -8,6 +8,16 @@ app_license = "mit"
 # Frappe CRM provides CRM Organization / CRM Deal (Contact comes from Frappe core).
 required_apps = ["crm"]
 
+# Show Cabinet ERP on the /apps chooser next to CRM (otherwise login lands in /crm only).
+add_to_apps_screen = [
+	{
+		"name": "cabinet_erp",
+		"logo": "/assets/cabinet_erp/cabinet_erp_logo.svg",
+		"title": "Cabinet ERP",
+		"route": "/app/cabinet-erp",
+	}
+]
+
 # Roles before doctypes sync; General Store location and CRM Deal custom field after.
 before_install = "cabinet_erp.install.before_install"
 after_install = "cabinet_erp.install.after_install"
