@@ -5,21 +5,20 @@
   "workspaceFolder": "/workspace",
   "remoteUser": "frappe",
   "forwardPorts": [
-    8000,
     8080
   ],
   "portsAttributes": {
-    "8000": {
-      "label": "Cabinet ERP",
+    "8080": {
+      "label": "Cabinet ERP (open this one)",
       "onAutoForward": "openBrowser"
     },
-    "8080": {
-      "label": "Cabinet ERP (use if 8000 shows 502)",
-      "onAutoForward": "silent"
+    "8000": {
+      "label": "Frappe dev server (internal; use 8080)",
+      "onAutoForward": "ignore"
     },
     "9000": {
-      "label": "Frappe realtime (not a web page)",
-      "onAutoForward": "silent"
+      "label": "Frappe realtime (internal, not a web page)",
+      "onAutoForward": "ignore"
     }
   },
   "postCreateCommand": "bash .devcontainer/setup.sh",

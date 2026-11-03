@@ -25,7 +25,7 @@ Hierarchy: **Client (C0001)** → **Project (P0001)** → **Production Order (P0
 | | What it is | How |
 |---|---|---|
 | **Demo site** | Static, read-only pages on GitHub Pages: clients, projects, orders (88 imported panels), stock, invoices, all six reports. The data is made up, but every total is computed by the app's own Python code. | Open the link above. Rebuilt on every push to `main` by `.github/workflows/pages.yml`. Local: `python scripts/build_demo_site.py && python -m http.server -d site 8080` |
-| **Live preview** | The real app (Frappe v15 + CRM + cabinet_erp) running in a GitHub Codespace with the same demo data loaded. You can create and submit records. | Click the Codespaces badge above. First start takes 10–15 min, then port 8000 opens; log in as `Administrator` / `admin`. See `.devcontainer/README.md`. |
+| **Live preview** | The real app (Frappe v15 + CRM + cabinet_erp) running in a GitHub Codespace with the same demo data loaded. You can create and submit records. | Click the Codespaces badge above. First start takes 10–15 min, then port **8080** opens; log in as `Administrator` / `admin`. See `.devcontainer/README.md`. |
 
 The demo data lives in `cabinet_erp/demo_data.py` and is used by both. To load it into
 any fresh site: `bench --site <site> execute cabinet_erp.demo.setup_demo`.
