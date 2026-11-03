@@ -38,8 +38,13 @@ if [ ! -e apps/cabinet_erp ]; then
   echo ">>> linking this repo as apps/cabinet_erp (edits in /workspace are live)"
   ln -s /workspace apps/cabinet_erp
   ./env/bin/pip install -q -e apps/cabinet_erp
-  grep -qx cabinet_erp sites/apps.txt || echo cabinet_erp >> sites/apps.txt
 fi
+# apps.txt may not end with a newline; appending blindly would glue names together
+# ("crmcabinet_erp"), so rewrite it as one clean name per line.
+# (Also repairs a file already broken that way by an earlier version of this script.)
+{ cat sites/apps.txt; echo; echo cabinet_erp; } \
+  | sed 's/^crmcabinet_erp$/crm/' | tr -s '[:space:]' '\n' | sed '/^$/d' | awk '!seen[$0]++' > sites/apps.txt.new
+mv sites/apps.txt.new sites/apps.txt
 
 if [ ! -d "sites/$SITE" ]; then
   echo ">>> new-site $SITE"
